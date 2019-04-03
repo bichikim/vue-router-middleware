@@ -1,6 +1,5 @@
-/* eslint-disable max-len,no-magic-numbers */
 module.exports = {
-  plugins: ['html', 'vue', 'typescript'],
+  plugins: ['html', '@typescript-eslint', 'import', 'vue'],
   env: {
     'commonjs': true,
     'browser': true,
@@ -9,48 +8,69 @@ module.exports = {
     'node': true,
     'mocha': true,
   },
+  settings: {
+    'import/parsers': {
+      '@typescript-eslint/parser': [ '.ts', '.tsx', 'vue'],
+    },
+  },
+  extends: ['eslint:recommended', 'plugin:vue/recommended', 'plugin:import/warnings'],
+  parserOptions: {
+    parser: '@typescript-eslint/parser',
+    sourceType: 'module',
+    useJSXTextNode: true,
+    jsx: true,
+  },
   overrides: [
     {
       files: ['*.js'],
       rules: {
         'indent': 'off',
-      }
+      },
     },
     {
-      files: ['*.ts'],
+      files: ['*.ts', '*.vue', '*.tsx'],
       rules: {
+        'indent': 'off',
         'new-cap': 'off',
         'no-undef': 'off',
         'no-undefined': 'off',
         'no-unused-vars': 'off',
-      }
+        'no-dupe-class-members': 'off',
+      },
     },
     {
-      files: ['*.spec.js'],
+      files: ['*.vue'],
+      rules: {
+        'max-len': 'off',
+      },
+    },
+    {
+      files: ['*.d.ts'],
+      rules: {
+        'import/no-duplicates': 'off',
+        'typescript/interface-name-prefix': 'off',
+        'typescript/no-namespace': 'off',
+        'no-magic-numbers': 'off',
+      },
+    },
+    {
+      files: [
+        '*.spec.js',
+        '*.spec.ts',
+        '*.test.ts',
+        '*.test.js',
+      ],
       rules: {
         'no-magic-numbers': 'off',
         'max-nested-callbacks': 'off',
         'no-undef': 'off',
-      }
-    }
+      },
+    },
   ],
-  'extends': ['eslint:recommended', 'plugin:vue/recommended'],
-  parserOptions: {
-    parser: 'typescript-eslint-parser',
-    sourceType: 'module',
-  },
   rules: {
     /**************************************
-     * chai
+     * import
      **************************************/
-
-    /**************************************
-     * vue options
-     **************************************/
-    'no-dupe-keys': 'error',
-    'vue/jsx-uses-vars': 'error',
-    'vue/max-attributes-per-line': ['error', {'singleline': 5, 'multiline': {'max': 3, 'allowFirstLine': false}}],
-    'vue/require-default-prop': 'error',
     /**************************************
      * common javascript options
      **************************************/
@@ -59,6 +79,8 @@ module.exports = {
     'no-undef': 'error',
     'no-console': ['warn', {allow: ['warn', 'error']}],
     'linebreak-style': 'off',
+    'no-prototype-builtins': 'off',
+    'class-methods-use-this': 'off',
     // on
     'array-callback-return': 'error',
     'arrow-parens': ['error', 'always'],
@@ -66,8 +88,19 @@ module.exports = {
     'block-scoped-var': 'error',
     'block-spacing': ['error', 'never'],
     'camelcase': ['error', {'properties': 'always'}],
-    'class-methods-use-this': 'error',
     'comma-dangle': ['error', 'always-multiline'],
+    'capitalized-comments': [
+      'error',
+      'always',
+      {
+        'line': {
+          'ignorePattern': '^(\w)*',
+        },
+        'block': {
+          'ignorePattern': '^( ?)(tslint:disable|eslint-disable|istanbul ignore)',
+        },
+      },
+    ],
     'comma-style': ['error', 'last'],
     'complexity': ['error', 20],
     'consistent-this': ['error', 'self'],
@@ -76,8 +109,25 @@ module.exports = {
     'getter-return': 'error',
     'global-require': 'error',
     'guard-for-in': 'error',
-    'indent': ['error', 2, { "SwitchCase": 1 }],
-    'keyword-spacing': ['error', {'before': false, 'after': false, 'overrides': {'const' : {before: true, after: true}, 'let' : {before: true, after: true}, 'from': {before: true, after: true}, 'import': {before: true, after: true}, 'as': {before: true, after: true}, 'export': {after: true}, 'return': {before: true, after: true}, 'this': {before: true, after: true}, 'case':{after: true}, 'extends': {before: true}, 'implements': {before: true},},}],
+    'indent': ['error', 2, { 'SwitchCase': 1 }],
+    'keyword-spacing': ['error', {
+      'before': false,
+      'after': false,
+      'overrides': {
+        'default': {before: true, after: true},
+        'const' : {before: true, after: true},
+        'let' : {before: true, after: true},
+        'from': {before: true, after: true},
+        'import': {before: true, after: true},
+        'as': {before: true, after: true},
+        'export': {after: true},
+        'return': {before: true, after: true},
+        'this': {before: true, after: true},
+        'case': {after: true},
+        'extends': {before: true},
+        'implements': {before: true},
+      },
+    }],
     'max-depth': ['error', {'max': 4}],
     'max-len': ['error', 100],
     'max-lines': ['error', 1000],
@@ -102,7 +152,7 @@ module.exports = {
     'no-extra-parens': ['error', 'functions'],
     'no-floating-decimal': 'error',
     'no-implicit-coercion': 'error',
-    'no-implicit-globals': 'error',
+    'no-implicit-globals': 'off',
     'no-implied-eval': 'error',
     'no-iterator': 'error',
     'no-label-var': 'error',
@@ -110,7 +160,7 @@ module.exports = {
     'no-lone-blocks': 'error',
     'no-lonely-if': 'error',
     'no-loop-func': 'error',
-    'no-magic-numbers': ['error', {'ignore': [0, 1]}],
+    'no-magic-numbers': ['error', {'ignore': [0, 1, -1]}],
     'no-multi-assign': 'error',
     'no-multi-str': 'error',
     'no-multiple-empty-lines': 'error',
@@ -123,7 +173,6 @@ module.exports = {
     'no-param-reassign': 'error',
     'no-plusplus': 'error',
     'no-proto': 'error',
-    'no-prototype-builtins': 'error',
     'no-return-assign': 'error',
     'no-return-await': 'error',
     'no-script-url': 'error',
@@ -149,46 +198,36 @@ module.exports = {
     'require-await': 'error',
     'semi': ['error', 'never'],
     'sort-keys': 'off',
-    'space-before-blocks': ['error', {'functions': 'always', 'keywords': 'never', 'classes': 'always'}],
-    'space-before-function-paren': ['error', {'anonymous': 'never', 'named': 'never', 'asyncArrow': 'always'}],
+    'space-before-blocks': ['error', {
+      'functions': 'always', 'keywords': 'never', 'classes': 'always'}],
+    'space-before-function-paren': ['error', {
+      'anonymous': 'never', 'named': 'never', 'asyncArrow': 'always'}],
     'vars-on-top': 'error',
-    // 'consistent-return': 'error', // disable for now
-    // 'func-style': ['error', 'expression', {'allowArrowFunctions': true}],
-    // 'no-mixed-operators': ['error', {groups: [["&&", "||"],]}],
-    // 'no-shadow': ['error', {'builtinGlobals': false, 'hoist': 'all'}],
-    // no-invalid-this: 'error',
-    // no-mixed-requires: 'error'
-    // no-path-concat: 'error'
-    // no-process-env: 'error'
-    // no-process-exit: 'error'
-    // no-restricted-modules
-    // no-restricted-properties
-    // no-warning-comments
-    //'max-statements': 'error'
 
     /*************************************
      * type script options
      *************************************/
     // off
-    'typescript/explicit-member-accessibility': 'off',
-    'typescript/member-delimiter-style': 'off',
-    'typescript/member-ordering': 'off',
-    'typescript/no-empty-interface': 'off',
-    'typescript/no-explicit-any': 'off',
-    'typescript/no-type-alias': 'off',
-    'typescript/no-use-before-define ': 'off',
+    '@typescript-eslint/explicit-member-accessibility': 'off',
+    '@typescript-eslint/interface-name-prefix': 'off',
+    '@typescript-eslint/member-delimiter-style': 'off',
+    '@typescript-eslint/member-ordering': 'off',
+    '@typescript-eslint/no-empty-interface': 'off',
+    '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/no-type-alias': 'off',
+    '@typescript-eslint/no-use-before-define ': 'off',
     // on
-    'typescript/adjacent-overload-signatures': 'error',
-    'typescript/class-name-casing': 'error',
-    'typescript/interface-name-prefix': ['error', 'always'],
-    'typescript/member-naming': ['error', {'private': '^_'}],
-    'typescript/no-angle-bracket-type-assertion': 'error',
-    'typescript/no-array-constructor': 'error',
-    'typescript/no-namespace': 'error',
-    'typescript/no-parameter-properties': 'error',
-    'typescript/no-triple-slash-reference': 'error',
-    'typescript/no-unused-vars': 'error',
-    'typescript/type-annotation-spacing': [
+    '@typescript-eslint/adjacent-overload-signatures': 'error',
+    '@typescript-eslint/class-name-casing': 'error',
+    '@typescript-eslint/member-naming': ['error', {'private': '^_'}],
+    '@typescript-eslint/no-angle-bracket-type-assertion': 'error',
+    '@typescript-eslint/no-array-constructor': 'error',
+    '@typescript-eslint/no-namespace': 'error',
+    '@typescript-eslint/no-parameter-properties': 'error',
+    '@typescript-eslint/no-triple-slash-reference': 'error',
+    // it has an error
+    '@typescript-eslint/no-unused-vars': 'warn',
+    '@typescript-eslint/type-annotation-spacing': [
       'error', {
         'before': false,
         'after': false,
@@ -203,5 +242,5 @@ module.exports = {
           },
         },
       }],
-  }
-};
+  },
+}
