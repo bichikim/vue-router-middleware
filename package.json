@@ -5,6 +5,14 @@
   "main": "dist/index.js",
   "author": "Bichi Kim <bichi@live.co.kr>",
   "license": "MIT",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "doc": "typedoc -out ./docs ./src --media ./media",
+    "test": "npm run test:unit",
+    "lint": "eslint \"src/\"",
+    "test:unit": "karma start config/karma.config.js --browsers=PhantomJS --single-run",
+    "preversion": "npm run test && npm run build"
+  },
   "keywords": [
     "vue",
     "router",

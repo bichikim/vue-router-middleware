@@ -15,7 +15,9 @@ module.exports = function(config) {
     files: [
       '../node_modules/@babel/polyfill/dist/polyfill.js',
       {pattern: '../src/**/*.spec.js', watched: false},
-      {pattern: '../test/specs/**/*.spec.js', watched: false},
+      {pattern: '../src/**/*.spec.ts', watched: false},
+      {pattern: '../test/spec/**/*.spec.js', watched: false},
+      {pattern: '../test/spec/**/*.spec.ts', watched: false},
     ],
     exclude: [
       '../src/**/*.spec.skip.js',
@@ -23,8 +25,8 @@ module.exports = function(config) {
     preprocessors: {
       '../src/**/*.js': ['webpack', 'sourcemap'],
       '../src/**/*.ts': ['webpack', 'sourcemap'],
-      '../test/specs/**/*.js': ['webpack', 'sourcemap'],
-      '../test/specs/**/*.ts': ['webpack', 'sourcemap'],
+      '../test/spec/**/*.js': ['webpack', 'sourcemap'],
+      '../test/spec/**/*.ts': ['webpack', 'sourcemap'],
     },
     coverageReporter: {
       type: 'in-memory',
