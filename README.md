@@ -1,4 +1,4 @@
-# Vue Router Middleware
+# Vue Middleware
 > vue router middleware
 
 [![LICENSE IMAGE]](https://www.npmjs.org/package/vue-router-middleware)
