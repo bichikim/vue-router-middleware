@@ -1,29 +1,35 @@
-import Router, {Route, RouteRecord} from 'vue-router'
+import Vue, {ComponentOptions} from 'vue'
+import {Route} from 'vue-router'
 import {Next} from 'vue-router/next'
 import {Store} from 'vuex'
+import {Context} from './types'
+
 export type RouterHook = (to: Route, from: Route, next?: Next) => any
 export type RouterAfterHook = (to: Route, from: Route) => any
-export interface AfterMiddlewareContext<S = any, A = any> {
+export interface AfterMiddlewareContext<A, S, V extends Vue = Vue> {
   to: Route
   from: Route
   next?: Next
-  app: A
+  app: ComponentOptions<V> & A
   store?: Store<S>
 }
 
-export interface MiddlewareContext<S = any, A = any> extends AfterMiddlewareContext {
+export interface MiddlewareContext<A, S, V extends Vue = Vue>
+  extends AfterMiddlewareContext<A, S, V> {
   next: Next
 }
 
-export type Middleware<S, A> = (context: AfterMiddlewareContext<S, A>) => any
-export interface MiddlewarePack<S, A> {
+export type Middleware<A, S, V extends Vue = Vue>
+  = (context: AfterMiddlewareContext<A, S, V>) => any
+
+export interface MiddlewarePack<A, S, V extends Vue = Vue> {
   name: string
-  middleware: Middleware<S, A>
+  middleware: Middleware<A, S, V>
 }
-export interface MiddlewarePackList<S, A> {
-  beforeEach: Array<MiddlewarePack<S, A>>
-  beforeResolve: Array<MiddlewarePack<S, A>>
-  afterEach: Array<MiddlewarePack<S, A>>
+export interface MiddlewarePackList<A, S, V extends Vue = Vue> {
+  beforeEach: Array<MiddlewarePack<A, S, V>>
+  beforeResolve: Array<MiddlewarePack<A, S, V>>
+  afterEach: Array<MiddlewarePack<A, S, V>>
 }
 
 export interface ModulePack {
@@ -39,17 +45,22 @@ const getFileName = (path: string): string => {
   return match[0].split('/')[1].split('.')[0]
 }
 
-const createPack = <S, A>(name: string, middleware: Middleware<S, A>): MiddlewarePack<S, A> => {
-  return {
-    name: getFileName(name),
-    middleware,
+const createPack =
+  <A, S, V extends Vue = Vue>(
+    name: string,
+    middleware: Middleware<A, S, V>,
+    ): MiddlewarePack<A, S, V> => {
+    return {
+      name: getFileName(name),
+      middleware,
+    }
   }
-}
 
-const getter = <S, A>(resources: __WebpackModuleApi.RequireContext): MiddlewarePackList<S, A> => {
-  const afterEachList: Array<MiddlewarePack<S, A>> = []
-  const beforeEachList: Array<MiddlewarePack<S, A>> = []
-  const beforeResolveList: Array<MiddlewarePack<S, A>> = []
+const getter = <A, S, V extends Vue = Vue>
+(resources: __WebpackModuleApi.RequireContext): MiddlewarePackList<A, S, V> => {
+  const afterEachList: Array<MiddlewarePack<A, S, V>> = []
+  const beforeEachList: Array<MiddlewarePack<A, S, V>> = []
+  const beforeResolveList: Array<MiddlewarePack<A, S, V>> = []
   const keys = resources.keys()
   const modules: ModulePack[] = keys.map((key) => ({
     name: key,
@@ -81,20 +92,19 @@ const getter = <S, A>(resources: __WebpackModuleApi.RequireContext): MiddlewareP
   }
 }
 
-export interface Options<A> {
+export interface Options {
   always?: string[]
-  app?: A
 }
 
-const capsule = <S, A>(
+const capsule = <A, S, V extends Vue = Vue>(
   name: string,
-  middleware: Middleware<S, A>,
+  middleware: Middleware<A, S, V>,
   store: Store<S>,
-  options: Options<A> = {},
+  app: ComponentOptions<V> & A,
+  options: Options = {},
 ): RouterHook | RouterAfterHook => {
   const {
     always = [],
-    app = {} as A,
   } = options
   return (to: Route, from: Route, next?: Next) => {
     const runMiddleware = () => {
@@ -104,8 +114,8 @@ const capsule = <S, A>(
       }
       return middleware(ctx)
     }
-    const alwaysSome = (requireName: string): boolean => (name === requireName)
-    const recordSome = (record: RouteRecord): boolean => {
+    const alwaysSome = (requireName): boolean => (name === requireName)
+    const recordSome = (record): boolean => {
       if(!record.meta || !record.meta.middleware){
         return false
       }
@@ -128,19 +138,23 @@ const capsule = <S, A>(
   }
 }
 
-export default <S, A = any>(router: Router, store: Store<S>, options: Options<A> = {}) => {
-  const middlewareList: MiddlewarePackList<S, A> = getter<S, A>(require.context(
+export default <A, S, V extends Vue = Vue>(context: Context<A, S, V>, options: Options = {}) => {
+  const {router, store, app} = context
+  if(!router){
+    return console.warn('[middleware] no router')
+  }
+  const middlewareList: MiddlewarePackList<A, S, V> = getter<A, S, V>(require.context(
     `${process.env.SRC_ALIAS}/${process.env.MIDDLEWARE_PATH}/`,
     false,
     /\.ts$/,
   ))
-  middlewareList.beforeEach.forEach(({name, middleware}: MiddlewarePack<S, A>) => {
-    router.beforeEach(capsule(name, middleware, store, options))
+  middlewareList.beforeEach.forEach(({name, middleware}: MiddlewarePack<A, S, V>) => {
+    router.beforeEach(capsule(name, middleware, store, app, options))
   })
-  middlewareList.beforeResolve.forEach(({name, middleware}: MiddlewarePack<S, A>) => {
-    router.beforeResolve(capsule(name, middleware, store, options))
+  middlewareList.beforeResolve.forEach(({name, middleware}: MiddlewarePack<A, S, V>) => {
+    router.beforeResolve(capsule(name, middleware, store, app, options))
   })
-  middlewareList.afterEach.forEach(({name, middleware}: MiddlewarePack<S, A>) => {
-    router.afterEach(capsule(name, middleware, store, options))
+  middlewareList.afterEach.forEach(({name, middleware}: MiddlewarePack<A, S, V>) => {
+    router.afterEach(capsule(name, middleware, store, app, options))
   })
 }

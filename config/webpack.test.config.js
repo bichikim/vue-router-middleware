@@ -31,6 +31,8 @@ module.exports = webpackMerge(WebpackBaseConfig, {
   plugins: [
     new Webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('test'),
+      'process.env.SRC_ALIAS': JSON.stringify('@@/test'),
+      'process.env.MIDDLEWARE_PATH': JSON.stringify('middleware'),
     }),
   ],
 })
